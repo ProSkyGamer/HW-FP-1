@@ -6,7 +6,7 @@ using UnityEngine;
 
 #endregion
 
-namespace Runtime.MainMenu.Controllers
+namespace Runtime.MainMenu
 {
     public class MiniGameTypeInputController : Controller
     {

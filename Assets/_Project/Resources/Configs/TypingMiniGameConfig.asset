@@ -15,6 +15,18 @@ MonoBehaviour:
   _miniGameAvailableSymbols:
   - <MiniGameType>k__BackingField: 0
     <Symbols>k__BackingField: 0123456789
+    <DeltaCurrencyOnWin>k__BackingField:
+      <CurrencyType>k__BackingField: 0
+      <MoneyValue>k__BackingField: 10
+    <DeltaCurrencyOnLose>k__BackingField:
+      <CurrencyType>k__BackingField: 0
+      <MoneyValue>k__BackingField: -5
   - <MiniGameType>k__BackingField: 1
     <Symbols>k__BackingField: qwertyuiopasdfghjklzxcvbnm
+    <DeltaCurrencyOnWin>k__BackingField:
+      <CurrencyType>k__BackingField: 0
+      <MoneyValue>k__BackingField: 15
+    <DeltaCurrencyOnLose>k__BackingField:
+      <CurrencyType>k__BackingField: 0
+      <MoneyValue>k__BackingField: -5
   <GeneratedStringLength>k__BackingField: 10

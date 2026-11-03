@@ -37,8 +37,8 @@ namespace Runtime.Gameplay.Bootstrap
 
         private static TypingMiniGameHandler CreateTypingMiniGameHandler(DIContainer c)
         {
-            GameConfigsLoader gameConfigsLoader = c.Resolve<GameConfigsLoader>();
-            TypingMiniGameConfig typingMiniGameConfig = gameConfigsLoader.GetConfig<TypingMiniGameConfig>();
+            GameConfigsProvider gameConfigsProvider = c.Resolve<GameConfigsProvider>();
+            TypingMiniGameConfig typingMiniGameConfig = gameConfigsProvider.GetConfig<TypingMiniGameConfig>();
 
             Dictionary<MiniGameType, StringGenerator> allStringGenerators = new();
 

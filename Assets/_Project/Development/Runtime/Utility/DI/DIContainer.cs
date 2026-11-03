@@ -25,13 +25,24 @@ namespace Runtime.Utility.DI
             _parent = parent;
         }
 
-        public void AddAsSingle<T>(Func<DIContainer, T> creator)
+        public void Initialize()
+        {
+            foreach (KeyValuePair<Type, Registration> registration in _registrations)
+            {
+                if (registration.Value.IsNonLazy)
+                    registration.Value.CreateInstance(this);
+            }
+        }
+
+        public IRegistrationOptions AddAsSingle<T>(Func<DIContainer, T> creator)
         {
             if (IsAlreadyRegistered<T>())
                 throw new InvalidOperationException($"Type {typeof(T)} is already registered!");
 
             Registration registration = new(container => creator.Invoke(container));
             _registrations.Add(typeof(T), registration);
+
+            return registration;
         }
 
         public bool IsAlreadyRegistered<T>()

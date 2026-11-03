@@ -6,10 +6,12 @@ using System;
 
 namespace Runtime.Utility.DI
 {
-    public class Registration
+    public class Registration : IRegistrationOptions
     {
         private readonly Func<DIContainer, object> _creator;
         private object _instance;
+
+        public bool IsNonLazy { get; private set; }
 
         public Registration(Func<DIContainer, object> creator)
         {
@@ -27,6 +29,11 @@ namespace Runtime.Utility.DI
             _instance = _creator(container);
 
             return _instance;
+        }
+
+        public void NonLazy()
+        {
+            IsNonLazy = true;
         }
     }
 }

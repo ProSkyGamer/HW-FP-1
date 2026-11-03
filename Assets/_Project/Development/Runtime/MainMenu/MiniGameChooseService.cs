@@ -8,7 +8,7 @@ using Runtime.Utility.SceneManagement;
 
 #endregion
 
-namespace Runtime.MainMenu.Controllers
+namespace Runtime.MainMenu
 {
     public class MiniGameChooseService : IDisposable
     {

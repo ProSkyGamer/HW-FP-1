@@ -3,13 +3,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Runtime.Gameplay.Meta.Wallet;
 using Runtime.Gameplay.TypingMiniGame;
 using Runtime.Gameplay.TypingMiniGame.States;
 using Runtime.Gameplay.TypingMiniGame.States.StatesImplementation;
 using Runtime.Gameplay.TypingMiniGame.States.StateTransitions;
+using Runtime.Meta.GameStatistics;
+using Runtime.Utility.AssetsLoader;
 using Runtime.Utility.Bootstrap;
 using Runtime.Utility.Controllers;
 using Runtime.Utility.Coroutines;
+using Runtime.Utility.DataSaves.DataProviders;
 using Runtime.Utility.DI;
 using Runtime.Utility.SceneManagement;
 using UnityEngine;
@@ -28,8 +32,9 @@ namespace Runtime.Gameplay.Bootstrap
         private ControllersFactory _controllersFactory;
         private TypingMiniGameStateController _typingMiniGameStateController;
         private SceneState _sceneState;
+        private PlayerDataProvider _playerDataProvider;
 
-        private readonly List<IDisposable> _disposables = new List<IDisposable>();
+        private readonly List<IDisposable> _disposables = new();
 
         public override void HandleSceneRegistrations(DIContainer container, ISceneArgs sceneArgs)
         {
@@ -47,6 +52,7 @@ namespace Runtime.Gameplay.Bootstrap
         {
             _sceneState = _sceneContainer.Resolve<SceneState>();
             _controllersFactory = _sceneContainer.Resolve<ControllersFactory>();
+            _playerDataProvider = _sceneContainer.Resolve<PlayerDataProvider>();
 
             MiniGameConditionsHandler miniGameConditionsHandler = _sceneContainer.Resolve<MiniGameConditionsHandler>();
 
@@ -69,7 +75,7 @@ namespace Runtime.Gameplay.Bootstrap
 
         private List<IStateTransitionCondition> GetStateTransitionConditions(MiniGameConditionsHandler miniGameConditionsHandler)
         {
-            return new List<IStateTransitionCondition>()
+            return new List<IStateTransitionCondition>
             {
                 new WaitingForGameToStartTransition(_sceneState),
                 new PlayingToWonStateTransition(miniGameConditionsHandler),
@@ -79,22 +85,34 @@ namespace Runtime.Gameplay.Bootstrap
 
         private Dictionary<TypingMiniGameState, IMiniGameStateHandler> GetMiniGameStateHandlers()
         {
-            return new()
+            SceneSwitcherService sceneSwitcherService = _sceneContainer.Resolve<SceneSwitcherService>();
+            ICoroutinesPerformer coroutinesPerformer = _sceneContainer.Resolve<ICoroutinesPerformer>();
+            TypingMiniGameConfig typingMiniGameConfig = _sceneContainer.Resolve<GameConfigsProvider>().GetConfig<TypingMiniGameConfig>();
+            MiniGameType miniGameType = _sceneArgs.MiniGameType;
+            WalletService walletService = _sceneContainer.Resolve<WalletService>();
+            TypingMiniGameStatisticsService statisticsService = _sceneContainer.Resolve<TypingMiniGameStatisticsService>();
+
+            WonState wonState = new(sceneSwitcherService,
+                _controllersFactory.CreateInputKeyController(KeyCode.Space),
+                coroutinesPerformer,
+                walletService,
+                typingMiniGameConfig.GetDeltaCurrencyOnWin(miniGameType),
+                statisticsService);
+
+            LostState lostState = new(sceneSwitcherService,
+                _controllersFactory.CreateInputKeyController(KeyCode.Space),
+                coroutinesPerformer,
+                _sceneArgs,
+                walletService,
+                typingMiniGameConfig.GetDeltaCurrencyOnLose(miniGameType),
+                statisticsService);
+
+            return new Dictionary<TypingMiniGameState, IMiniGameStateHandler>
             {
                 { TypingMiniGameState.WaitingForStart, new WaitingForGameToStartState() },
                 { TypingMiniGameState.Playing, new PlayingState(_typingMiniGameHandler) },
-                {
-                    TypingMiniGameState.Won,
-                    new WonState(_sceneContainer.Resolve<SceneSwitcherService>(),
-                        _controllersFactory.CreateInputKeyController(KeyCode.Space),
-                        _sceneContainer.Resolve<ICoroutinesPerformer>())
-                },
-                {
-                    TypingMiniGameState.Lost,
-                    new LostState(_sceneContainer.Resolve<SceneSwitcherService>(),
-                        _controllersFactory.CreateInputKeyController(KeyCode.Space),
-                        _sceneContainer.Resolve<ICoroutinesPerformer>(), _sceneArgs)
-                }
+                { TypingMiniGameState.Won, wonState },
+                { TypingMiniGameState.Lost, lostState }
             };
         }
 
@@ -115,6 +133,8 @@ namespace Runtime.Gameplay.Bootstrap
             }
 
             _sceneState.Stop();
+
+            yield return _playerDataProvider.Save();
 
             yield break;
         }

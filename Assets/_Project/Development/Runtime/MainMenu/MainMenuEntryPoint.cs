@@ -4,7 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Runtime.Gameplay.Bootstrap;
-using Runtime.MainMenu.Controllers;
+using Runtime.Meta.GameStatistics;
 using Runtime.Utility.Bootstrap;
 using Runtime.Utility.Controllers;
 using Runtime.Utility.Coroutines;
@@ -22,6 +22,8 @@ namespace Runtime.MainMenu
 
         private MiniGameChooseService _miniGameChooseService;
         private readonly List<IDisposable> _disposables = new();
+        private GameInfoDataProvider _gameInfoDataProvider;
+        private ResetStatisticsService _resetStatisticsService;
 
         public override void HandleSceneRegistrations(DIContainer container, ISceneArgs sceneArgs)
         {
@@ -37,7 +39,7 @@ namespace Runtime.MainMenu
             ControllersFactory controllersFactory = _sceneContainer.Resolve<ControllersFactory>();
 
             MultiInputTypeController<MiniGameType> miniGameTypeInputController = controllersFactory.CreateMultiInputTypeController(
-                new Dictionary<MiniGameType, KeyCode>()
+                new Dictionary<MiniGameType, KeyCode>
                 {
                     { MiniGameType.Numbers, KeyCode.Alpha1 },
                     { MiniGameType.Letters, KeyCode.Alpha2 }
@@ -49,6 +51,12 @@ namespace Runtime.MainMenu
 
             _disposables.Add(_miniGameChooseService);
 
+            _gameInfoDataProvider = _sceneContainer.Resolve<GameInfoDataProvider>();
+            _disposables.Add(_gameInfoDataProvider);
+
+            _resetStatisticsService = _sceneContainer.Resolve<ResetStatisticsService>();
+            _disposables.Add(_resetStatisticsService);
+
             yield return new WaitForSeconds(1f);
         }
 
@@ -57,6 +65,8 @@ namespace Runtime.MainMenu
             Debug.Log("Main menu starting scene");
 
             _miniGameChooseService.Activate();
+            _gameInfoDataProvider.Activate();
+            _resetStatisticsService.Activate();
         }
 
         public override IEnumerator UnloadScene()

@@ -9,13 +9,13 @@ using Unity.VisualScripting;
 
 namespace Runtime.Utility.AssetsLoader
 {
-    public class GameConfigsLoader
+    public class GameConfigsProvider
     {
         private readonly IConfigsLoader[] _configsLoaders;
 
         private readonly Dictionary<Type, object> _configs = new();
 
-        public GameConfigsLoader(params IConfigsLoader[] configsLoaders)
+        public GameConfigsProvider(params IConfigsLoader[] configsLoaders)
         {
             _configsLoaders = configsLoaders;
         }

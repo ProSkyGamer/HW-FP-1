@@ -1,12 +1,23 @@
 #region
 
+using System;
+using System.Collections.Generic;
+using Runtime.Gameplay.Meta.Wallet;
+using Runtime.Meta.GameStatistics;
 using Runtime.Utility.AssetsLoader;
 using Runtime.Utility.Controllers;
 using Runtime.Utility.Coroutines;
+using Runtime.Utility.DataSaves;
+using Runtime.Utility.DataSaves.DataKeys;
+using Runtime.Utility.DataSaves.DataProviders;
+using Runtime.Utility.DataSaves.Repository;
+using Runtime.Utility.DataSaves.Serialization;
 using Runtime.Utility.DI;
 using Runtime.Utility.LoadingScreen;
+using Runtime.Utility.Reacts;
 using Runtime.Utility.SceneManagement;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 #endregion
 
@@ -27,6 +38,15 @@ namespace Runtime.Utility.GameEntryPoint
             container.AddAsSingle<IControllersRunner>(CreateControllersRunner);
             container.AddAsSingle(CreateControllersFactory);
             container.AddAsSingle(CreateSceneSwitcherService);
+
+            container.AddAsSingle(CreateWalletService).NonLazy();
+            container.AddAsSingle(CreateTypingMiniGameStatisticsService).NonLazy();
+
+            container.AddAsSingle<ISaveLoadDataService>(CreateDataSavesManager);
+            container.AddAsSingle(CreatePlayerDataProvider).NonLazy();
+            container.AddAsSingle<IDataKeysProvider>(CreateDataKeyStorage);
+            container.AddAsSingle<IDataRepository>(CreateLocalFileDataRepository);
+            container.AddAsSingle<IDataSerializer>(CreateJsonDataSerializer);
         }
 
         private static ResourcesAssetsLoader CreateResourcesAssetsLoader(DIContainer c)
@@ -44,12 +64,12 @@ namespace Runtime.Utility.GameEntryPoint
             return resourcesConfigLoader;
         }
 
-        private static GameConfigsLoader CreateGameConfigsLoader(DIContainer c)
+        private static GameConfigsProvider CreateGameConfigsLoader(DIContainer c)
         {
             IConfigsLoader configsLoader = c.Resolve<IConfigsLoader>();
-            GameConfigsLoader gameConfigsLoader = new(configsLoader);
+            GameConfigsProvider gameConfigsProvider = new(configsLoader);
 
-            return gameConfigsLoader;
+            return gameConfigsProvider;
         }
 
         private static CoroutinesPerformer CreateCoroutinesPerformer(DIContainer c)
@@ -98,9 +118,70 @@ namespace Runtime.Utility.GameEntryPoint
         private static ControllersFactory CreateControllersFactory(DIContainer c)
         {
             IControllersRunner controllersRunner = c.Resolve<IControllersRunner>();
-            ControllersFactory controllersFactory = new ControllersFactory(controllersRunner);
+            ControllersFactory controllersFactory = new(controllersRunner);
 
             return controllersFactory;
+        }
+
+        private static WalletService CreateWalletService(DIContainer c)
+        {
+            Dictionary<CurrencyType, ReactVariable<int>> currencies = new();
+
+            foreach (CurrencyType currencyType in Enum.GetValues(typeof(CurrencyType)))
+            {
+                currencies.Add(currencyType, new ReactVariable<int>());
+            }
+
+            PlayerDataProvider playerDataProvider = c.Resolve<PlayerDataProvider>();
+
+            WalletService walletService = new(currencies, playerDataProvider);
+
+            return walletService;
+        }
+
+        private static TypingMiniGameStatisticsService CreateTypingMiniGameStatisticsService(DIContainer c)
+        {
+            TypingMiniGameStatisticsService typingMiniGameStatisticsService = new(c.Resolve<PlayerDataProvider>());
+
+            return typingMiniGameStatisticsService;
+        }
+
+        private static DataSavesService CreateDataSavesManager(DIContainer c)
+        {
+            IDataKeysProvider keysStorage = c.Resolve<IDataKeysProvider>();
+            IDataRepository dataRepository = c.Resolve<IDataRepository>();
+            IDataSerializer serializer = c.Resolve<IDataSerializer>();
+
+            DataSavesService dataSavesManager = new(keysStorage, dataRepository, serializer);
+
+            return dataSavesManager;
+        }
+
+        private static DataKeyStorage CreateDataKeyStorage(DIContainer c)
+        {
+            DataKeyStorage dataKeyStorage = new();
+
+            return dataKeyStorage;
+        }
+
+        private static LocalFileDataRepository CreateLocalFileDataRepository(DIContainer c)
+        {
+            string folderPath = Application.isEditor ? Application.dataPath : Application.persistentDataPath;
+            LocalFileDataRepository localFileDataRepository = new(folderPath, "json");
+
+            return localFileDataRepository;
+        }
+
+        private static JsonDataSerializer CreateJsonDataSerializer(DIContainer c)
+        {
+            return new JsonDataSerializer();
+        }
+
+        private static PlayerDataProvider CreatePlayerDataProvider(DIContainer c)
+        {
+            PlayerDataProvider playerDataProvider = new(c.Resolve<ISaveLoadDataService>(), c.Resolve<GameConfigsProvider>());
+
+            return playerDataProvider;
         }
     }
 }

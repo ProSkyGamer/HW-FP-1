@@ -43,6 +43,7 @@ namespace Runtime.Utility.SceneManagement
                 throw new NullReferenceException($"Scene {sceneName} does not has boostrap");
 
             DIContainer sceneContainer = new(_projectContainer);
+            sceneContainer.Initialize();
 
             loadedSceneEntryPoint.HandleSceneRegistrations(sceneContainer, sceneArgs);
 

@@ -3,6 +3,7 @@
 using System.Collections;
 using Runtime.Utility.AssetsLoader;
 using Runtime.Utility.Coroutines;
+using Runtime.Utility.DataSaves.DataProviders;
 using Runtime.Utility.DI;
 using Runtime.Utility.LoadingScreen;
 using Runtime.Utility.SceneManagement;
@@ -19,6 +20,7 @@ namespace Runtime.Utility.GameEntryPoint
             DIContainer projectContainer = new();
 
             GameEntryPointRegistrations.Register(projectContainer);
+            projectContainer.Initialize();
 
             ICoroutinesPerformer coroutinesPerformer = projectContainer.Resolve<ICoroutinesPerformer>();
             coroutinesPerformer.ProcessCoroutine(Initialize(projectContainer));
@@ -29,9 +31,20 @@ namespace Runtime.Utility.GameEntryPoint
             ILoadingScreen loadingScreen = container.Resolve<ILoadingScreen>();
             loadingScreen.Show();
 
-            GameConfigsLoader gameConfigsLoader = container.Resolve<GameConfigsLoader>();
+            GameConfigsProvider gameConfigsProvider = container.Resolve<GameConfigsProvider>();
 
-            yield return gameConfigsLoader.LoadAll();
+            yield return gameConfigsProvider.LoadAll();
+
+            PlayerDataProvider playerDataProvider = container.Resolve<PlayerDataProvider>();
+
+            bool playerDataExists = false;
+
+            yield return playerDataProvider.Exists(result => playerDataExists = result);
+
+            if (playerDataExists)
+                yield return playerDataProvider.Load();
+            else
+                playerDataProvider.Reset();
 
             loadingScreen.Hide();
 

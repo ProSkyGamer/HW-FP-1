@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Runtime.Gameplay.TypingMiniGame;
+using Runtime.Utility.DataSaves;
 using UnityEngine;
 
 #endregion
@@ -14,7 +15,9 @@ namespace Runtime.Utility.AssetsLoader
     {
         private readonly Dictionary<Type, string> _loadingAssetsPaths = new()
         {
-            { typeof(TypingMiniGameConfig), "Configs/TypingMiniGameConfig" }
+            { typeof(TypingMiniGameConfig), "Configs/TypingMiniGameConfig" },
+            { typeof(PlayerOriginDataConfig), "Configs/PlayerOriginDataConfig" },
+            { typeof(StatisticsConfig), "Configs/StatisticsConfig" }
         };
 
         private readonly ResourcesAssetsLoader _resourcesAssetsLoader;
