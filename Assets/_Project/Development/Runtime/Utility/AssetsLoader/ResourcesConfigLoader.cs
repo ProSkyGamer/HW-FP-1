@@ -17,7 +17,8 @@ namespace Runtime.Utility.AssetsLoader
         {
             { typeof(TypingMiniGameConfig), "Configs/TypingMiniGameConfig" },
             { typeof(PlayerOriginDataConfig), "Configs/PlayerOriginDataConfig" },
-            { typeof(StatisticsConfig), "Configs/StatisticsConfig" }
+            { typeof(StatisticsConfig), "Configs/StatisticsConfig" },
+            { typeof(CurrencyIconConfig), "Configs/CurrencyIconConfig" }
         };
 
         private readonly ResourcesAssetsLoader _resourcesAssetsLoader;

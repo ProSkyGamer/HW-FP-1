@@ -60,6 +60,7 @@ namespace Runtime.Gameplay.TypingMiniGame
 
         public void EndMiniGame()
         {
+            _stringTypingController.TypedStringUpdated -= StringTypingController_OnTypedStringUpdated;
             _stringTypingController.Deactivate();
         }
     }

@@ -35,5 +35,12 @@ namespace Runtime.Utility.DI
         {
             IsNonLazy = true;
         }
+
+        public void OnDispose()
+        {
+            if (_instance != null)
+                if (_instance is IDisposable disposable)
+                    disposable.Dispose();
+        }
     }
 }

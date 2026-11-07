@@ -2,6 +2,7 @@
 
 using Runtime.Utility.DataSaves;
 using Runtime.Utility.DataSaves.DataProviders;
+using Runtime.Utility.Reacts;
 
 #endregion
 
@@ -11,8 +12,11 @@ namespace Runtime.Meta.GameStatistics
     {
         private readonly PlayerDataProvider _playerDataProvider;
 
-        public int WinCount { get; private set; }
-        public int LoseCount { get; private set; }
+        private readonly ReactVariable<int> _winCount = new();
+        private readonly ReactVariable<int> _loseCount = new();
+
+        public IReadonlyVariable<int> WinCount => _winCount;
+        public IReadonlyVariable<int> LoseCount => _loseCount;
 
         public TypingMiniGameStatisticsService(PlayerDataProvider playerDataProvider)
         {
@@ -24,30 +28,30 @@ namespace Runtime.Meta.GameStatistics
 
         public void WriteTo(PlayerData data)
         {
-            data.WinsCount = WinCount;
-            data.LosesCount = LoseCount;
+            data.WinsCount = WinCount.Value;
+            data.LosesCount = LoseCount.Value;
         }
 
         public void ReadFrom(PlayerData data)
         {
-            WinCount = data.WinsCount;
-            LoseCount = data.LosesCount;
+            _winCount.Value = data.WinsCount;
+            _loseCount.Value = data.LosesCount;
         }
 
         public void AddWin()
         {
-            WinCount++;
+            _winCount.Value++;
         }
 
         public void AddLose()
         {
-            LoseCount++;
+            _loseCount.Value++;
         }
 
         public void ResetData()
         {
-            WinCount = 0;
-            LoseCount = 0;
+            _winCount.Value = 0;
+            _loseCount.Value = 0;
         }
     }
 }

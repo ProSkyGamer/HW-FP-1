@@ -1,13 +1,17 @@
 #region
 
+using System;
 using Runtime.Gameplay.Meta.Wallet;
 using Runtime.Meta.GameStatistics;
+using Runtime.UI.Core;
+using Runtime.UI.MainMenu;
 using Runtime.Utility.AssetsLoader;
 using Runtime.Utility.Controllers;
 using Runtime.Utility.Coroutines;
 using Runtime.Utility.DataSaves.DataProviders;
 using Runtime.Utility.DI;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 #endregion
 
@@ -19,8 +23,14 @@ namespace Runtime.MainMenu
         {
             Debug.Log("Main menu scene registrations");
 
+            container.AddAsSingle(CreateMainMenuUIRoot).NonLazy();
+            container.AddAsSingle(CreateMainMenuScreenPresenter).NonLazy();
+
             container.AddAsSingle(CreateWalletInfoDataProvider);
             container.AddAsSingle(CreateResetStatisticsService);
+
+            container.AddAsSingle(CreateMainMenuPopupService);
+            container.AddAsSingle(CreateMainMenuPresentersFactory);
         }
 
         private static GameInfoDataProvider CreateWalletInfoDataProvider(DIContainer c)
@@ -46,6 +56,49 @@ namespace Runtime.MainMenu
                 c.Resolve<PlayerDataProvider>());
 
             return resetStatisticsService;
+        }
+
+        private static MainMenuUIRoot CreateMainMenuUIRoot(DIContainer c)
+        {
+            Debug.Log("Main menu UI root");
+
+            ResourcesAssetsLoader resourcesAssetsLoader = c.Resolve<ResourcesAssetsLoader>();
+
+            GameObject mainMenuUIRootPrefab = resourcesAssetsLoader.Load<GameObject>("UI/MainMenu/MainMenuUIRoot");
+            GameObject instance = Object.Instantiate(mainMenuUIRootPrefab);
+            MainMenuUIRoot mainMenuUIRoot = instance.GetComponent<MainMenuUIRoot>();
+
+            if (mainMenuUIRoot == null)
+                throw new NullReferenceException("Prefab for MainMenuUIRoot does not contain required component");
+
+            return mainMenuUIRoot;
+        }
+
+        private static MainMenuPopupService CreateMainMenuPopupService(DIContainer c)
+        {
+            return new MainMenuPopupService(c.Resolve<ViewsFactory>(),
+                c.Resolve<ProjectPresentersFactory>(),
+                c.Resolve<MainMenuUIRoot>());
+        }
+
+        private static MainMenuPresentersFactory CreateMainMenuPresentersFactory(DIContainer c)
+        {
+            return new MainMenuPresentersFactory(c);
+        }
+
+        private static MainMenuScreenPresenter CreateMainMenuScreenPresenter(DIContainer c)
+        {
+            MainMenuUIRoot uiRoot = c.Resolve<MainMenuUIRoot>();
+
+            MainMenuScreenView mainMenuScreenView =
+                c.Resolve<ViewsFactory>().CreateView<MainMenuScreenView>(ViewIDs.MainMenuScreenViewID, uiRoot.HUDLayer);
+
+            MainMenuPresentersFactory mainMenuPresentersFactory = c.Resolve<MainMenuPresentersFactory>();
+
+            MainMenuScreenPresenter mainMenuScreenPresenter = mainMenuPresentersFactory.CreateMainMenuScreenPresenter(mainMenuScreenView);
+            mainMenuScreenPresenter.Initialize();
+
+            return mainMenuScreenPresenter;
         }
     }
 }

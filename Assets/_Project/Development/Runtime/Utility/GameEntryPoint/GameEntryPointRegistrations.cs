@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Runtime.Gameplay.Meta.Wallet;
 using Runtime.Meta.GameStatistics;
+using Runtime.UI.Core;
 using Runtime.Utility.AssetsLoader;
 using Runtime.Utility.Controllers;
 using Runtime.Utility.Coroutines;
@@ -47,6 +48,9 @@ namespace Runtime.Utility.GameEntryPoint
             container.AddAsSingle<IDataKeysProvider>(CreateDataKeyStorage);
             container.AddAsSingle<IDataRepository>(CreateLocalFileDataRepository);
             container.AddAsSingle<IDataSerializer>(CreateJsonDataSerializer);
+
+            container.AddAsSingle(CreateViewsFactory);
+            container.AddAsSingle(CreatePresentersFactory);
         }
 
         private static ResourcesAssetsLoader CreateResourcesAssetsLoader(DIContainer c)
@@ -182,6 +186,16 @@ namespace Runtime.Utility.GameEntryPoint
             PlayerDataProvider playerDataProvider = new(c.Resolve<ISaveLoadDataService>(), c.Resolve<GameConfigsProvider>());
 
             return playerDataProvider;
+        }
+
+        private static ViewsFactory CreateViewsFactory(DIContainer c)
+        {
+            return new ViewsFactory(c.Resolve<ResourcesAssetsLoader>());
+        }
+
+        private static ProjectPresentersFactory CreatePresentersFactory(DIContainer c)
+        {
+            return new ProjectPresentersFactory(c);
         }
     }
 }

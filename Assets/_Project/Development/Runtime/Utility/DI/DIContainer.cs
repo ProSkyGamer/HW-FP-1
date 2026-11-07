@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace Runtime.Utility.DI
 {
-    public class DIContainer
+    public class DIContainer : IDisposable
     {
         private readonly Dictionary<Type, Registration> _registrations = new();
 
@@ -77,6 +77,14 @@ namespace Runtime.Utility.DI
             }
 
             throw new InvalidOperationException($"No implementation of type {typeof(T)}");
+        }
+
+        public void Dispose()
+        {
+            foreach (Registration registration in _registrations.Values)
+            {
+                registration.OnDispose();
+            }
         }
     }
 }
