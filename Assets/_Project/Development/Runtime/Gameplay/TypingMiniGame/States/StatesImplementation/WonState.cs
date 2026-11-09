@@ -2,6 +2,7 @@
 
 using Runtime.Gameplay.Meta.Wallet;
 using Runtime.Meta.GameStatistics;
+using Runtime.UI.Gameplay;
 using Runtime.Utility.Controllers;
 using Runtime.Utility.Coroutines;
 using Runtime.Utility.SceneManagement;
@@ -19,9 +20,11 @@ namespace Runtime.Gameplay.TypingMiniGame.States.StatesImplementation
         private readonly WalletService _walletService;
         private readonly CurrencyData _currencyData;
         private readonly TypingMiniGameStatisticsService _statisticsService;
+        private readonly GameplayPopupService _popupService;
 
         public WonState(SceneSwitcherService sceneSwitcherService, InputKeyController inputKeyController, ICoroutinesPerformer coroutinesPerformer,
-            WalletService walletService, CurrencyData currencyData, TypingMiniGameStatisticsService statisticsService)
+            WalletService walletService, CurrencyData currencyData, TypingMiniGameStatisticsService statisticsService,
+            GameplayPopupService popupService)
         {
             _sceneSwitcherService = sceneSwitcherService;
             _inputKeyController = inputKeyController;
@@ -29,6 +32,7 @@ namespace Runtime.Gameplay.TypingMiniGame.States.StatesImplementation
             _walletService = walletService;
             _currencyData = currencyData;
             _statisticsService = statisticsService;
+            _popupService = popupService;
         }
 
         public void TransitionIntoThis()
@@ -36,15 +40,19 @@ namespace Runtime.Gameplay.TypingMiniGame.States.StatesImplementation
             _inputKeyController.KeyCodePressed += InputKeyController_OnKeyCodePressed;
             _inputKeyController.Activate();
 
-            if (_currencyData.MoneyValue > 0)
-                _walletService.AddCurrency(_currencyData.CurrencyType, _currencyData.MoneyValue);
-            else if (_currencyData.MoneyValue < 0)
-                if (_walletService.IsEnough(_currencyData.CurrencyType, -_currencyData.MoneyValue))
-                    _walletService.SpendCurrency(_currencyData.CurrencyType, -_currencyData.MoneyValue);
+            CurrencyType currencyType = _currencyData.CurrencyType;
+            int moneyValue = _currencyData.MoneyValue;
 
-            Debug.Log($"Stats {_statisticsService.WinCount}");
+            _popupService.ShowConfirmPopup($"Победа, начислено {moneyValue} {currencyType}! \n Нажмите, чтобы вернуться в главное меню",
+                () => { _coroutinesPerformer.ProcessCoroutine(_sceneSwitcherService.SwitchSceneTo(Scenes.MainMenu)); });
+
+            if (moneyValue > 0)
+                _walletService.AddCurrency(currencyType, moneyValue);
+            else if (moneyValue < 0)
+                if (_walletService.IsEnough(currencyType, -moneyValue))
+                    _walletService.SpendCurrency(currencyType, -moneyValue);
+
             _statisticsService.AddWin();
-            Debug.Log($"Stats {_statisticsService.WinCount}");
 
             Debug.Log($"GAME WON! Press {_inputKeyController.KeyCode} to go to main menu!");
         }

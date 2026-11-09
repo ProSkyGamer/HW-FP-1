@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   StatisticsResetPrice:
     <CurrencyType>k__BackingField: 0
-    <MoneyValue>k__BackingField: 20
+    <MoneyValue>k__BackingField: 400

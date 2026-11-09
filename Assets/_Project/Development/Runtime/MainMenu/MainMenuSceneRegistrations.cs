@@ -60,8 +60,6 @@ namespace Runtime.MainMenu
 
         private static MainMenuUIRoot CreateMainMenuUIRoot(DIContainer c)
         {
-            Debug.Log("Main menu UI root");
-
             ResourcesAssetsLoader resourcesAssetsLoader = c.Resolve<ResourcesAssetsLoader>();
 
             GameObject mainMenuUIRootPrefab = resourcesAssetsLoader.Load<GameObject>("UI/MainMenu/MainMenuUIRoot");

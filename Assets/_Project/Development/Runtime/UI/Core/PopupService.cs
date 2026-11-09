@@ -42,10 +42,10 @@ namespace Runtime.UI.Core
             InitializePresenter(presenter, view);
         }
 
-        public void ShowConfirmPopup(string popupText)
+        public void ShowConfirmPopup(string popupText, Action confirmCallback = null)
         {
             ConfirmPopupView view = _viewsFactory.CreateView<ConfirmPopupView>(ViewIDs.ConfirmPopupViewID, PopupLayer);
-            ConfirmPopupPresenter presenter = _presentersFactory.CreateConfirmPopupPresenter(view, popupText);
+            ConfirmPopupPresenter presenter = _presentersFactory.CreateConfirmPopupPresenter(view, popupText, confirmCallback);
 
             InitializePresenter(presenter, view);
         }

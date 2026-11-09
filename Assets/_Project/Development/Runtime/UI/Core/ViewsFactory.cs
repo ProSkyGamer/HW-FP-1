@@ -22,7 +22,8 @@ namespace Runtime.UI.Core
             { ViewIDs.IconTextElementViewID, "UI/Common/IconTextView" },
             { ViewIDs.DoubleTextElementViewID, "UI/Common/DoubleTextView" },
             { ViewIDs.ConfirmCancelPopupViewID, "UI/Common/ConfirmCancelPopupView" },
-            { ViewIDs.ConfirmPopupViewID, "UI/Common/ConfirmPopupView" }
+            { ViewIDs.ConfirmPopupViewID, "UI/Common/ConfirmPopupView" },
+            { ViewIDs.GameplayScreenViewID, "UI/Gameplay/GameplayScreen" }
         };
 
         public ViewsFactory(ResourcesAssetsLoader resourcesAssetsLoader)

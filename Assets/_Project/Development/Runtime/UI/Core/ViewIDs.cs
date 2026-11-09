@@ -10,5 +10,6 @@ namespace Runtime.UI.Core
         public const string DoubleTextElementViewID = "DoubleTextElementView";
         public const string ConfirmCancelPopupViewID = "ConfirmCancelPopupView";
         public const string ConfirmPopupViewID = "ConfirmPopupView";
+        public const string GameplayScreenViewID = "GameplayScreenView";
     }
 }

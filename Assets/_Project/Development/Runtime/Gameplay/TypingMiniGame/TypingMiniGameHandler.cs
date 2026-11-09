@@ -11,6 +11,9 @@ namespace Runtime.Gameplay.TypingMiniGame
 {
     public class TypingMiniGameHandler
     {
+        public event Action<string> RequiredStringUpdated;
+        public event Action<string> TypingStringUpdated;
+
         private MiniGameType _miniGameType;
 
         private readonly Dictionary<MiniGameType, StringGenerator> _miniGameTypeToStringGenerator;
@@ -40,7 +43,7 @@ namespace Runtime.Gameplay.TypingMiniGame
             if (_miniGameTypeToStringGenerator.TryGetValue(_miniGameType, out StringGenerator stringGenerator) == false)
                 throw new NullReferenceException($"No string generator for {_miniGameType} mini game type");
 
-            _requiredString = stringGenerator.GenerateString(_requiredStringLength);
+            UpdateRequiredString(stringGenerator);
 
             _stringTypingController.TypedStringUpdated += StringTypingController_OnTypedStringUpdated;
 
@@ -51,9 +54,17 @@ namespace Runtime.Gameplay.TypingMiniGame
             Debug.Log($"Required sequence to type {_requiredString}!");
         }
 
+        private void UpdateRequiredString(StringGenerator stringGenerator)
+        {
+            _requiredString = stringGenerator.GenerateString(_requiredStringLength);
+            RequiredStringUpdated?.Invoke(_requiredString);
+        }
+
         private void StringTypingController_OnTypedStringUpdated(string typedString)
         {
             Debug.Log($"Currently typed: {typedString}, required to type: {_requiredString}");
+
+            TypingStringUpdated?.Invoke(typedString);
 
             _miniGameConditionsHandler.CheckConditions(_requiredString, typedString);
         }

@@ -9,6 +9,7 @@ using Runtime.Gameplay.TypingMiniGame.States;
 using Runtime.Gameplay.TypingMiniGame.States.StatesImplementation;
 using Runtime.Gameplay.TypingMiniGame.States.StateTransitions;
 using Runtime.Meta.GameStatistics;
+using Runtime.UI.Gameplay;
 using Runtime.Utility.AssetsLoader;
 using Runtime.Utility.Bootstrap;
 using Runtime.Utility.Controllers;
@@ -91,13 +92,15 @@ namespace Runtime.Gameplay.Bootstrap
             MiniGameType miniGameType = _sceneArgs.MiniGameType;
             WalletService walletService = _sceneContainer.Resolve<WalletService>();
             TypingMiniGameStatisticsService statisticsService = _sceneContainer.Resolve<TypingMiniGameStatisticsService>();
+            GameplayPopupService popupService = _sceneContainer.Resolve<GameplayPopupService>();
 
             WonState wonState = new(sceneSwitcherService,
                 _controllersFactory.CreateInputKeyController(KeyCode.Space),
                 coroutinesPerformer,
                 walletService,
                 typingMiniGameConfig.GetDeltaCurrencyOnWin(miniGameType),
-                statisticsService);
+                statisticsService,
+                popupService);
 
             LostState lostState = new(sceneSwitcherService,
                 _controllersFactory.CreateInputKeyController(KeyCode.Space),
@@ -105,7 +108,8 @@ namespace Runtime.Gameplay.Bootstrap
                 _sceneArgs,
                 walletService,
                 typingMiniGameConfig.GetDeltaCurrencyOnLose(miniGameType),
-                statisticsService);
+                statisticsService,
+                popupService);
 
             return new Dictionary<TypingMiniGameState, IMiniGameStateHandler>
             {

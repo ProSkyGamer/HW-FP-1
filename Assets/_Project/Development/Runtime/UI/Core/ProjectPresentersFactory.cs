@@ -91,9 +91,9 @@ namespace Runtime.UI.Core
             return confirmCancelPopupPresenter;
         }
 
-        public ConfirmPopupPresenter CreateConfirmPopupPresenter(ConfirmPopupView view, string popupText)
+        public ConfirmPopupPresenter CreateConfirmPopupPresenter(ConfirmPopupView view, string popupText, Action confirmCallback = null)
         {
-            ConfirmPopupPresenter confirmPopupPresenter = new(view, popupText);
+            ConfirmPopupPresenter confirmPopupPresenter = new(view, popupText, confirmCallback);
 
             return confirmPopupPresenter;
         }

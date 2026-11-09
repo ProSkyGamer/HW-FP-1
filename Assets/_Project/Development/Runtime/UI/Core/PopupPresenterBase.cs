@@ -17,7 +17,7 @@ namespace Runtime.UI.Core
             Hide();
         }
 
-        private void OnViewCloseRequested()
+        protected virtual void OnViewCloseRequested()
         {
             Debug.Log("before event");
 

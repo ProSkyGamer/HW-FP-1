@@ -3,6 +3,7 @@
 using Runtime.Gameplay.Bootstrap;
 using Runtime.Gameplay.Meta.Wallet;
 using Runtime.Meta.GameStatistics;
+using Runtime.UI.Gameplay;
 using Runtime.Utility.Controllers;
 using Runtime.Utility.Coroutines;
 using Runtime.Utility.SceneManagement;
@@ -21,10 +22,11 @@ namespace Runtime.Gameplay.TypingMiniGame.States.StatesImplementation
         private readonly WalletService _walletService;
         private readonly CurrencyData _currencyData;
         private readonly TypingMiniGameStatisticsService _statisticsService;
+        private readonly GameplayPopupService _popupService;
 
         public LostState(SceneSwitcherService sceneSwitcherService, InputKeyController inputKeyController, ICoroutinesPerformer coroutinesPerformer,
             GameplaySceneArgs gameplaySceneArgs, WalletService walletService, CurrencyData currencyData,
-            TypingMiniGameStatisticsService statisticsService)
+            TypingMiniGameStatisticsService statisticsService, GameplayPopupService popupService)
         {
             _sceneSwitcherService = sceneSwitcherService;
             _inputKeyController = inputKeyController;
@@ -32,10 +34,9 @@ namespace Runtime.Gameplay.TypingMiniGame.States.StatesImplementation
             _walletService = walletService;
             _currencyData = currencyData;
             _statisticsService = statisticsService;
+            _popupService = popupService;
 
-            _gameplaySceneArgs = gameplaySceneArgs; // если честно вообще не нравится эта строка
-            // лучше наверное было бы чисто переходить назад в игровой стейт,
-            // но там в задании написано спецефически перезгразиться сцену, поэтому что есть
+            _gameplaySceneArgs = gameplaySceneArgs;
         }
 
         public void TransitionIntoThis()
@@ -43,11 +44,22 @@ namespace Runtime.Gameplay.TypingMiniGame.States.StatesImplementation
             _inputKeyController.KeyCodePressed += InputKeyController_OnKeyCodePressed;
             _inputKeyController.Activate();
 
-            if (_currencyData.MoneyValue > 0)
-                _walletService.AddCurrency(_currencyData.CurrencyType, _currencyData.MoneyValue);
-            else if (_currencyData.MoneyValue < 0)
-                if (_walletService.IsEnough(_currencyData.CurrencyType, -_currencyData.MoneyValue))
-                    _walletService.SpendCurrency(_currencyData.CurrencyType, -_currencyData.MoneyValue);
+            CurrencyType currencyType = _currencyData.CurrencyType;
+            int moneyValue = _currencyData.MoneyValue;
+
+            _popupService.ShowConfirmPopup($"Поражений, вычтено {moneyValue} {currencyType}! \n Нажмите, чтобы повторить попытку",
+                () => { _coroutinesPerformer.ProcessCoroutine(_sceneSwitcherService.SwitchSceneTo(Scenes.Gameplay, _gameplaySceneArgs)); });
+            // TODO
+            // прям совсем неправильно чувствуется, делать это здесь, но с другой стороны, а если мне нужно тупо подождать пока
+            // закроется уведомление, а потом сделать какую-то логику (что такое callback, кто бы о нем помнил)
+            // писать что ли обертку какую-то чисто под стейты и выкидывать ивент о смене стейта?
+            // короче я хз, ничего из этого не звучит нормально, поэтому тут оставлю просто
+
+            if (moneyValue > 0)
+                _walletService.AddCurrency(currencyType, moneyValue);
+            else if (moneyValue < 0)
+                if (_walletService.IsEnough(currencyType, -moneyValue))
+                    _walletService.SpendCurrency(currencyType, -moneyValue);
 
             _statisticsService.AddLose();
 
